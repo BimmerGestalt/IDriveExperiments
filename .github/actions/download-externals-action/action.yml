@@ -1,0 +1,7 @@
+name: "Download Build Dependencies"
+description: "Downloads external dependencies to build the project"
+runs:
+  using: "composite"
+  steps:
+    - run: /bin/bash ${{ github.action_path }}/download.sh
+      shell: bash
