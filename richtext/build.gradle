@@ -11,12 +11,11 @@ repositories {
 }
 
 android {
-    compileSdkVersion 33
-
     defaultConfig {
         applicationId "io.bimmergestalt.idriveexperiments.richtext"
+        compileSdk 34
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
@@ -39,6 +38,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'io.bimmergestalt.idriveexperiments.richtext'
 }
 
 dependencies {
