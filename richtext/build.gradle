@@ -11,13 +11,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.0"
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "io.bimmergestalt.idriveexperiments.richtext"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
 
