@@ -5,6 +5,9 @@
       <entry key="app">
         <State />
       </entry>
+      <entry key="map">
+        <State />
+      </entry>
       <entry key="richtext">
         <State />
       </entry>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Folder>
+<open>1</open>
+<Style id="kmz_poi_normal.png"><IconStyle><Icon><href>kmz_poi_normal.png</href></Icon></IconStyle></Style>
+<Style id="kmz_poi_highlight.png"><IconStyle><Icon><href>kmz_poi_highlight.png</href></Icon></IconStyle></Style>
+<StyleMap id="f8cd938bc6f6fa2f39172a8f46c03cfbf26b6a07">
+<Pair><key>normal</key><styleUrl>#kmz_poi_normal.png</styleUrl></Pair>
+<Pair><key>highlight</key><styleUrl>#kmz_poi_highlight.png</styleUrl></Pair>
+</StyleMap>
+<Placemark id="1">
+<name></name>
+<styleUrl>#f8cd938bc6f6fa2f39172a8f46c03cfbf26b6a07</styleUrl>
+<Point><coordinates>-121.8959279,37.3105937</coordinates></Point>
+</Placemark>
+</Folder>
+</kml>

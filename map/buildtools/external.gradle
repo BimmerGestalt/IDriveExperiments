@@ -1,0 +1,66 @@
+
+def RHMISources = [
+        "BMW": [
+                // bmwone for mapState
+                "bmwone/bmwone.p7b": "bmwone/rhmi/bmw/bmwone.p7b",
+                "bmwone/rhmi/ui_description_ID5.xml": "bmwone/rhmi/ui_description.xml",
+                "bmwone/rhmi/common/texts.zip": "bmwone/rhmi/common/texts.zip",
+
+        ],
+]
+
+// extract RHMI resources from official apps
+task confirmRHMIResources() {
+    doLast {
+        def bmwFound = new FileNameByRegexFinder().getFileNames(file("../external").toString(), /(?i)bmw.*connected.*\.apk/)
+        if (bmwFound.isEmpty()) throw new MissingResourceException("Could not locate BMW Connected APK in external directory")
+    }
+}
+
+task extractRHMIResources(type: Copy, dependsOn: confirmRHMIResources) {
+    description "Extracts necessary RHMI resources for compilation"
+
+    def destRoot = "src/main/assets/carapplications"
+
+    def sources = [
+            "BMW": new FileNameByRegexFinder().getFileNames(file("../external").toString(), /(?i)bmw.*connected.*\.apk/),
+    ]
+
+    // actually do the copy
+    sources.each { sourceZip ->
+        // only prepare the CopySpec if a destination file from this zip is missing
+        def missing = RHMISources[sourceZip.key].values().findAll {
+            !file("$destRoot/$it").exists()
+        }
+        if (!missing.isEmpty() && !sourceZip.value.isEmpty()) {
+            RHMISources[sourceZip.key].each { sourceFile ->
+                from({ zipTree(sourceZip.value[0]) }) {
+                    include "assets/carapplications/${sourceFile.key}"
+                    eachFile { it.relativePath = new RelativePath(true, sourceFile.value) }
+                }
+            }
+            if (inputs.sourceFiles.empty) throw new MissingResourceException("Could not locate RHMI Resources in provided APK: ${sourceZip.value}")
+        }
+    }
+    into destRoot
+
+    // declare the list of expected files, to inform Gradle Caching
+    def outputFiles = RHMISources.values().collect({ sourceZip ->
+        sourceZip.values()
+    }).flatten().collect({
+        "$destRoot/$it"
+    })
+    outputs.files outputFiles
+
+    // make extra sure that the correct files were extracted from the APKs
+    doLast {
+        def missing = outputFiles.findAll {
+            !file(it).exists()
+        }
+        if (!missing.isEmpty()) {
+            throw new MissingResourceException("Missing required RHMI files:\n${missing.join("\n")}")
+        }
+    }
+}
+
+preBuild.dependsOn extractRHMIResources
