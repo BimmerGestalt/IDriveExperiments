@@ -8,11 +8,13 @@ import io.bimmergestalt.idriveconnectkit.IDriveConnection
 import io.bimmergestalt.idriveconnectkit.Utils.rhmi_setResourceCached
 import io.bimmergestalt.idriveconnectkit.android.CarAppAssetResources
 import io.bimmergestalt.idriveconnectkit.android.IDriveConnectionStatus
+import io.bimmergestalt.idriveconnectkit.android.security.PrivateKeyHandling
 import io.bimmergestalt.idriveconnectkit.android.security.SecurityAccess
 import io.bimmergestalt.idriveconnectkit.rhmi.RHMIApplication
 import io.bimmergestalt.idriveconnectkit.rhmi.RHMIApplicationEtch
 import io.bimmergestalt.idriveconnectkit.rhmi.RHMIApplicationIdempotent
 import io.bimmergestalt.idriveconnectkit.rhmi.RHMIApplicationSynchronized
+import java.io.ByteArrayInputStream
 
 
 val TAG = "CarMap"
@@ -35,11 +37,25 @@ class CarApp(
 		try {
 			MainViewModel.log("Starting connecting to car")
 //			val appCert = carAppResources.getAppCertificate("common").readBytes()
+
+			MainViewModel.log("Loading key")
+			val rawKey = carAppResources.loadFile("carapplications/${carAppResources.name}/rhmi/common/${carAppResources.name}.p12")!!.readBytes()
+			val glympseToken = "AQABAAsAewBNAAYAMQBoACoACABPABMANQAJAE8AXAByAFQA" +
+					"SABEAHcAegB2ADsAPwB7AC8AJABtAFUASwANACIAJQBnACoA" +
+					"LAA9AGQAKAA0ABkAUgAQADgAIABrADEANAAOAEkABAAlAGUA" +
+					"MgApAGgALwA4AGoAeQBAAF4AFQAqAH4AKgAYAEwAEAA7ACwA" +
+					"dAAlAD0ANQB8AD4APgAQAEUAUwA="
+			val passphrase = PrivateKeyHandling.decodePassphrase(glympseToken, "com.glympse.iphone.glympse")
+			val key = PrivateKeyHandling.loadPrivateKey(ByteArrayInputStream(rawKey), passphrase)
+			if (key == null) {
+				MainViewModel.log("failed to decode key")
+			}
+
 			val rawCert = carAppResources.loadFile("carapplications/${carAppResources.name}/rhmi/common/${carAppResources.name}.p7b")!!.readBytes()
 			MainViewModel.log("Presenting cert")
 			val sas_challenge = carConnection.sas_certificate(rawCert)
-			MainViewModel.log("Signing cert")
-			val sas_response = securityAccess.signChallenge(challenge = sas_challenge)
+			MainViewModel.log("Signing challenge")
+			val sas_response = PrivateKeyHandling.signChallenge(sas_challenge, key!!, false)
 			MainViewModel.log("Logging in")
 			carConnection.sas_login(sas_response)
 
@@ -58,8 +74,9 @@ class CarApp(
 		MainViewModel.log("Creating RHMI")
 		val rhmiHandle = carConnection.rhmi_create(null, BMWRemoting.RHMIMetaData("io.bimmergestalt.idriveexperiments.certs", BMWRemoting.VersionInfo(0, 1, 0), "io.bimmergestalt.idriveexperiments.certs", "io.bimmergestalt"))
 		carConnection.rhmi_setResourceCached(rhmiHandle, BMWRemoting.RHMIResourceType.DESCRIPTION, carAppResources.getUiDescription())
-		carConnection.rhmi_setResourceCached(rhmiHandle, BMWRemoting.RHMIResourceType.TEXTDB, carAppResources.getTextsDB("mini"))
-		carConnection.rhmi_setResourceCached(rhmiHandle, BMWRemoting.RHMIResourceType.IMAGEDB, carAppResources.getImagesDB("mini"))
+		carConnection.rhmi_setResourceCached(rhmiHandle, BMWRemoting.RHMIResourceType.TEXTDB, carAppResources.getTextsDB(iDriveConnectionStatus.brand ?: "common"))
+		carConnection.rhmi_setResourceCached(rhmiHandle, BMWRemoting.RHMIResourceType.IMAGEDB, carAppResources.getImagesDB("common"))
+		carConnection.rhmi_setResourceCached(rhmiHandle, BMWRemoting.RHMIResourceType.IMAGEDB, carAppResources.getImagesDB(iDriveConnectionStatus.brand ?: "common"))
 		carConnection.rhmi_initialize(rhmiHandle)
 
 		MainViewModel.log("Created RHMI")

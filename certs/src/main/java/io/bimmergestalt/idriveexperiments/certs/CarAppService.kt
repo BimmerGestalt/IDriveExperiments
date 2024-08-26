@@ -83,7 +83,7 @@ class CarAppService: Service() {
 				app = CarApp(
 					iDriveConnectionStatus,
 					securityAccess,
-					CarAppAssetResources(applicationContext, "spotify"),
+					CarAppAssetResources(applicationContext, "glympse"),
 				)
 			}
 			thread?.start()
